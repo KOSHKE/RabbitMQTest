@@ -106,43 +106,52 @@ docker-compose build <service-name>
 
 ## ⚙️ Configuration
 
-All configuration is handled via environment variables with sensible defaults:
+All configuration is handled via `.env` file with sensible defaults:
 
 ```bash
-# Business rules (optional)
-PAYMENT_SUCCESS_RATE=0.9        # Default: 90% success rate
-MIN_ORDER_VALUE=10.0             # Default: $10
-MAX_ORDER_VALUE=500.0            # Default: $500
+# Business Configuration
+PAYMENT_SUCCESS_RATE=0.9
+MIN_ORDER_VALUE=10.0
+MAX_ORDER_VALUE=500.0
 
-# Infrastructure (optional)
-RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672/  # Default
+# Infrastructure
+RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672/
+RABBITMQ_USER=admin
+RABBITMQ_PASS=admin
+
+# Monitoring
+GRAFANA_ADMIN_PASSWORD=admin
 ```
 
-### Example with custom configuration:
-```yaml
-# docker-compose.yml
-order-service:
-  environment:
-    - MIN_ORDER_VALUE=50.0
-    - MAX_ORDER_VALUE=1000.0
-    
-payment-service:
-  environment:
-    - PAYMENT_SUCCESS_RATE=0.8
+### Customizing configuration:
+```bash
+# Edit .env file
+nano .env
+
+# Example changes:
+PAYMENT_SUCCESS_RATE=0.8
+MIN_ORDER_VALUE=50.0
+MAX_ORDER_VALUE=1000.0
+
+# Restart services
+docker-compose up --build
 ```
 
 ## 🧪 Testing
 
 ```bash
-# Test individual services
-docker-compose exec order-service python -m pytest
-docker-compose exec payment-service python -m pytest
-docker-compose exec shipping-service python -m pytest
-
 # View service metrics
 curl http://localhost:8001/metrics  # Order Service
 curl http://localhost:8002/metrics  # Payment Service
 curl http://localhost:8003/metrics  # Shipping Service
+
+# Check service logs
+docker-compose logs order-service
+docker-compose logs payment-service
+docker-compose logs shipping-service
+
+# Verify message flow
+docker-compose logs -f  # Watch real-time event processing
 ```
 
 ## 📋 Features
@@ -151,7 +160,7 @@ curl http://localhost:8003/metrics  # Shipping Service
 - ✅ **Event-driven** microservices
 - ✅ **Dependency Inversion** principle
 - ✅ **Repository Pattern** implementation
-- ✅ **Comprehensive testing** (unit + integration)
+- ✅ **Real-time monitoring** and observability
 - ✅ **Production-ready** monitoring stack
 - ✅ **Docker containerization**
 - ✅ **Health checks** and retry logic
