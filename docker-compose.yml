@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # Infrastructure
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./grafana:/etc/grafana/provisioning
+
+  # Microservices
+  order-service:
+    build: ./services/order-service
+    container_name: order-service
+    ports:
+      - "8001:8001"
+    environment:
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  payment-service:
+    build: ./services/payment-service
+    container_name: payment-service
+    ports:
+      - "8002:8002"
+    environment:
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672/
+      - PAYMENT_SUCCESS_RATE=0.9
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  shipping-service:
+    build: ./services/shipping-service
+    container_name: shipping-service
+    ports:
+      - "8003:8003"
+    environment:
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy

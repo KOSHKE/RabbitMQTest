@@ -1,0 +1,78 @@
+{
+  "id": null,
+  "title": "E-commerce System Monitoring",
+  "tags": ["ecommerce", "orders"],
+  "timezone": "browser",
+  "panels": [
+    {
+      "id": 1,
+      "title": "Orders by Status",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "orders_total",
+          "refId": "A",
+          "legendFormat": "{{status}}"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 8, "x": 0, "y": 0}
+    },
+    {
+      "id": 2,
+      "title": "Active Orders",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "active_orders_count",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 8, "x": 8, "y": 0}
+    },
+    {
+      "id": 3,
+      "title": "Average Order Value",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "rate(order_value_dollars_sum[5m]) / rate(order_value_dollars_count[5m])",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 8, "x": 16, "y": 0}
+    },
+    {
+      "id": 4,
+      "title": "Payment Processing Time",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(payment_processing_seconds_bucket[5m]))",
+          "refId": "A",
+          "legendFormat": "95th percentile"
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(payment_processing_seconds_bucket[5m]))",
+          "refId": "B",
+          "legendFormat": "50th percentile"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+    },
+    {
+      "id": 5,
+      "title": "Order Rate",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(orders_total[1m])",
+          "refId": "A",
+          "legendFormat": "{{status}}"
+        }
+      ],
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+    }
+  ],
+  "time": {"from": "now-15m", "to": "now"},
+  "refresh": "5s"
+}
