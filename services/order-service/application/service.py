@@ -1,4 +1,5 @@
 import random
+import os
 from domain.entities import Order
 from domain.interfaces import OrderRepository, EventBus, MetricsCollector
 from domain.events import OrderPlacedEvent
@@ -10,11 +11,13 @@ class OrderApplicationService:
         self.event_bus = event_bus
         self.metrics = metrics
         self.order_repository = order_repository
+        self.min_order_value = float(os.getenv('MIN_ORDER_VALUE', '10.0'))
+        self.max_order_value = float(os.getenv('MAX_ORDER_VALUE', '500.0'))
         
     def place_order(self):
         # Create domain object
         customer_id = f"CUST-{random.randint(1, 1000)}"
-        order_value = round(random.uniform(10, 500), 2)
+        order_value = round(random.uniform(self.min_order_value, self.max_order_value), 2)
         order = Order(customer_id, order_value)
         
         # Create domain event

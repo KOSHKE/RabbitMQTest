@@ -31,6 +31,12 @@ OrderPlaced → PaymentProcessed → OrderShipped
 git clone <repository-url>
 cd RabbitMQTest
 
+# Copy environment variables
+cp .env.example .env
+
+# (Optional) Edit configuration
+nano .env
+
 # Start all microservices
 docker-compose up --build
 
@@ -49,7 +55,6 @@ docker-compose logs -f shipping-service
 | **Shipping Service** | http://localhost:8003/metrics | - |
 | **Prometheus** | http://localhost:9090 | - |
 | **Grafana** | http://localhost:3000 | admin/admin |
-| **RabbitMQ Management** | http://localhost:15672 | admin/admin |
 
 ## 📈 Monitoring
 
@@ -62,17 +67,17 @@ docker-compose logs -f shipping-service
 ## 🛠️ Development
 
 ```bash
-# Run tests
-make test
+# Start services
+docker-compose up --build
 
-# Run linting
-make lint
+# Stop services
+docker-compose down
 
-# Clean up
-make clean
+# View logs
+docker-compose logs -f <service-name>
 
-# Development setup
-make dev-setup
+# Rebuild specific service
+docker-compose build <service-name>
 ```
 
 ## 🏗️ Project Structure
@@ -95,7 +100,7 @@ make dev-setup
 │       ├── infrastructure/
 │       └── main.py
 ├── config/               # Configuration
-├── tests/                # Test suites
+├── grafana/              # Grafana dashboards
 └── docker-compose.yml    # Microservices orchestration
 ```
 
@@ -110,8 +115,20 @@ MIN_ORDER_VALUE=10.0             # Default: $10
 MAX_ORDER_VALUE=500.0            # Default: $500
 
 # Infrastructure (optional)
-RABBITMQ_URL=amqp://admin:admin@localhost:5672/  # Default
-PROMETHEUS_PORT=8000             # Default: 8000
+RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672/  # Default
+```
+
+### Example with custom configuration:
+```yaml
+# docker-compose.yml
+order-service:
+  environment:
+    - MIN_ORDER_VALUE=50.0
+    - MAX_ORDER_VALUE=1000.0
+    
+payment-service:
+  environment:
+    - PAYMENT_SUCCESS_RATE=0.8
 ```
 
 ## 🧪 Testing
