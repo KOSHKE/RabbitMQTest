@@ -1,4 +1,4 @@
-# E-commerce Microservices: RabbitMQ + Prometheus + Grafana
+# E-commerce Microservices: RabbitMQ + Redis + Prometheus + Grafana
 
 🚀 **Production-ready** e-commerce microservices with **Domain-Driven Design** architecture.
 
@@ -7,10 +7,10 @@
 ### Domain-Driven Design Layers
 - **Domain Layer** - Pure business logic (entities, events, services)
 - **Application Layer** - Use cases orchestration  
-- **Infrastructure Layer** - External concerns (RabbitMQ, Prometheus)
+- **Infrastructure Layer** - External concerns (RabbitMQ, Redis, Prometheus)
 
 ### Bounded Contexts
-- **Orders** - Order management
+- **Orders** - Order management with Redis persistence
 - **Payments** - Payment processing  
 - **Shipping** - Order fulfillment
 
@@ -21,6 +21,7 @@ OrderPlaced → PaymentProcessed → OrderShipped
 ```
 
 - **Asynchronous processing** via RabbitMQ
+- **Redis storage** for orders with customer indexing
 - **90% payment success rate** (configurable)
 - **Real-time metrics** collection
 
@@ -53,6 +54,9 @@ docker-compose logs -f shipping-service
 | **Order Service** | http://localhost:8001/metrics | - |
 | **Payment Service** | http://localhost:8002/metrics | - |
 | **Shipping Service** | http://localhost:8003/metrics | - |
+| **RabbitMQ Management** | http://localhost:15672 | admin/admin |
+| **RabbitMQ Metrics** | http://localhost:15692/metrics | - |
+| **Redis** | localhost:6379 | - |
 | **Prometheus** | http://localhost:9090 | - |
 | **Grafana** | http://localhost:3000 | admin/admin |
 
@@ -60,9 +64,11 @@ docker-compose logs -f shipping-service
 
 - **Order metrics** by status (placed, paid, shipped, failed)
 - **Payment processing time** (95th/50th percentiles)
+- **Shipping processing time** tracking
 - **Average order value** tracking
 - **Active orders** gauge
-- **RabbitMQ queue** monitoring
+- **RabbitMQ queue** monitoring (messages, connections, channels)
+- **Redis operations** monitoring
 
 ## 🛠️ Development
 
@@ -118,6 +124,7 @@ MAX_ORDER_VALUE=500.0
 RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672/
 RABBITMQ_USER=admin
 RABBITMQ_PASS=admin
+REDIS_URL=redis://redis:6379
 
 # Monitoring
 GRAFANA_ADMIN_PASSWORD=admin
@@ -144,27 +151,27 @@ docker-compose up --build
 curl http://localhost:8001/metrics  # Order Service
 curl http://localhost:8002/metrics  # Payment Service
 curl http://localhost:8003/metrics  # Shipping Service
+curl http://localhost:15692/metrics # RabbitMQ metrics
+
+# Access management interfaces
+open http://localhost:15672         # RabbitMQ Management (admin/admin)
+open http://localhost:9090          # Prometheus
+open http://localhost:3000          # Grafana (admin/admin)
 
 # Check service logs
 docker-compose logs order-service
 docker-compose logs payment-service
 docker-compose logs shipping-service
+docker-compose logs rabbitmq
+
+# Connect to Redis
+docker exec -it redis redis-cli
+# > keys order:*
+# > get order:ORD-12345
 
 # Verify message flow
 docker-compose logs -f  # Watch real-time event processing
 ```
-
-## 📋 Features
-
-- ✅ **Domain-Driven Design** architecture
-- ✅ **Event-driven** microservices
-- ✅ **Dependency Inversion** principle
-- ✅ **Repository Pattern** implementation
-- ✅ **Real-time monitoring** and observability
-- ✅ **Production-ready** monitoring stack
-- ✅ **Docker containerization**
-- ✅ **Health checks** and retry logic
-- ✅ **Configurable business rules**
 
 ## 🛑 Stopping
 
