@@ -14,16 +14,6 @@ class PrometheusMetricsCollector(MetricsCollector):
         """Start Prometheus metrics server"""
         start_http_server(port)
         
-    def increment_counter(self, name: str, labels: dict = None) -> None:
-        """Increment counter metric"""
-        if name == 'orders_total' and labels:
-            self.orders_total.labels(**labels).inc()
-        
-    def record_histogram(self, name: str, value: float) -> None:
-        """Record histogram value"""
-        if name == 'order_value':
-            self.order_value.observe(value)
-        
     # Specific business methods
     def increment_orders(self, status: str) -> None:
         """Increment orders counter"""

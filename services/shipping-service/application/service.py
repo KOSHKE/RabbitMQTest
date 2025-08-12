@@ -11,15 +11,12 @@ class ShippingApplicationService:
         self.event_bus = event_bus
         self.metrics = metrics
         
-    def ship_order(self, ch, method, properties, body):
+    def ship_order(self, payment_data: dict):
         """Ship order after successful payment"""
         try:
-            # Parse payment event
-            payment_data = json.loads(body.decode())
             
             # Only ship if payment was successful
             if not payment_data.get('success', False):
-                print(f"Shipping Service: Skipping failed payment for order {payment_data['order_id']}")
                 return
             
             order_id = payment_data['order_id']
@@ -41,11 +38,8 @@ class ShippingApplicationService:
             self.event_bus.publish('shipping.shipped', shipping_event.to_dict())
             
             # Update metrics
-            self.metrics.increment_counter('shipments_total', {'status': 'shipped'})
-            self.metrics.record_histogram('shipping_processing_time', processing_time)
-            
-            print(f"Shipping Service: Order {order_id} shipped with tracking {tracking_number}")
+            self.metrics.increment_shipments('shipped')
+            self.metrics.record_shipping_processing_time(processing_time)
             
         except Exception as e:
-            print(f"Shipping Service: Error shipping order: {e}")
-            self.metrics.increment_counter('shipments_total', {'status': 'error'})
+            self.metrics.increment_shipments('error')

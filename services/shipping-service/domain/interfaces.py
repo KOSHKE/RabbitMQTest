@@ -15,7 +15,7 @@ class EventBus(ABC):
         pass
     
     @abstractmethod
-    async def subscribe(self, queue_name: str, callback: Callable) -> None:
+    async def subscribe(self, queue_name: str, callback: Callable[[dict], None]) -> None:
         """Subscribe to queue messages"""
         pass
     
@@ -28,11 +28,11 @@ class MetricsCollector(ABC):
     """Domain interface for metrics collection"""
     
     @abstractmethod
-    def increment_counter(self, name: str, labels: dict = None) -> None:
-        """Increment counter metric"""
+    def increment_shipments(self, status: str) -> None:
+        """Increment shipments counter"""
         pass
     
     @abstractmethod
-    def record_histogram(self, name: str, value: float) -> None:
-        """Record histogram value"""
+    def record_shipping_processing_time(self, duration: float) -> None:
+        """Record shipping processing time"""
         pass

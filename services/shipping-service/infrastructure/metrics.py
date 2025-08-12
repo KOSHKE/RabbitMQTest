@@ -13,12 +13,10 @@ class PrometheusMetricsCollector(MetricsCollector):
         """Start Prometheus metrics server"""
         start_http_server(port)
         
-    def increment_counter(self, name: str, labels: dict = None) -> None:
-        """Increment counter metric"""
-        if name == 'shipments_total' and labels:
-            self.shipments_total.labels(**labels).inc()
+    def increment_shipments(self, status: str) -> None:
+        """Increment shipments counter"""
+        self.shipments_total.labels(status=status).inc()
         
-    def record_histogram(self, name: str, value: float) -> None:
-        """Record histogram value"""
-        if name == 'shipping_processing_time':
-            self.shipping_processing_time.observe(value)
+    def record_shipping_processing_time(self, duration: float) -> None:
+        """Record shipping processing time"""
+        self.shipping_processing_time.observe(duration)

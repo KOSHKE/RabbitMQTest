@@ -1,9 +1,10 @@
 import asyncio
 import time
 import random
+import os
 from infrastructure.messaging import RabbitMQEventBus
 from infrastructure.metrics import PrometheusMetricsCollector
-from infrastructure.repository import InMemoryOrderRepository
+from infrastructure.redis_repository import RedisOrderRepository
 from application.service import OrderApplicationService
 
 class OrderService:
@@ -24,7 +25,9 @@ class OrderService:
         self.metrics = PrometheusMetricsCollector()
         self.metrics.start_server(8001)  # Order service on port 8001
         
-        self.repository = InMemoryOrderRepository()
+        # Setup Redis repository
+        self.repository = RedisOrderRepository()
+        await self.repository.connect()
         
         # Application
         self.service = OrderApplicationService(
@@ -34,18 +37,13 @@ class OrderService:
     async def order_generator(self):
         """Generate orders periodically - limited to 100 orders"""
         for i in range(100):
-            self.service.place_order()
-            print(f"Order Service: Generated {i+1}/100 orders")
+            await self.service.place_order()
             await asyncio.sleep(random.uniform(1, 4))
-        
-        print("Order Service: Order generation completed")
     
     async def run(self):
         """Start the order service"""
         print("Starting Order Service...")
-        
         await self.setup()
-        
         print("Order Service started on port 8001")
         
         # Start order generator
@@ -56,13 +54,14 @@ class OrderService:
             while True:
                 await asyncio.sleep(1)
         except KeyboardInterrupt:
-            print("Order Service: Shutting down...")
             await self.cleanup()
     
     async def cleanup(self):
         """Cleanup resources"""
         if self.event_bus:
             await self.event_bus.close()
+        if self.repository:
+            await self.repository.close()
 
 async def main():
     """Order Service entry point"""

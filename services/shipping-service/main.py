@@ -28,9 +28,7 @@ class ShippingService:
     async def run(self):
         """Start the shipping service"""
         print("Starting Shipping Service...")
-        
         await self.setup()
-        
         print("Shipping Service started on port 8003")
         
         # Start shipping processing
@@ -43,7 +41,6 @@ class ShippingService:
             while True:
                 await asyncio.sleep(1)
         except KeyboardInterrupt:
-            print("Shipping Service: Shutting down...")
             await self.cleanup()
     
     async def cleanup(self):

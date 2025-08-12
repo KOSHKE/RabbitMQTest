@@ -13,12 +13,10 @@ class PrometheusMetricsCollector(MetricsCollector):
         """Start Prometheus metrics server"""
         start_http_server(port)
         
-    def increment_counter(self, name: str, labels: dict = None) -> None:
-        """Increment counter metric"""
-        if name == 'payments_total' and labels:
-            self.payments_total.labels(**labels).inc()
+    def increment_payments(self, status: str) -> None:
+        """Increment payments counter"""
+        self.payments_total.labels(status=status).inc()
         
-    def record_histogram(self, name: str, value: float) -> None:
-        """Record histogram value"""
-        if name == 'payment_processing_time':
-            self.payment_processing_time.observe(value)
+    def record_payment_processing_time(self, duration: float) -> None:
+        """Record payment processing time"""
+        self.payment_processing_time.observe(duration)

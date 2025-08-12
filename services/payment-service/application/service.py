@@ -12,11 +12,10 @@ class PaymentApplicationService:
         self.metrics = metrics
         self.payment_success_rate = float(os.getenv('PAYMENT_SUCCESS_RATE', '0.9'))
         
-    def process_order_payment(self, ch, method, properties, body):
+    def process_order_payment(self, order_data: dict):
         """Process payment for an order"""
         try:
-            # Parse order event
-            order_data = json.loads(body.decode())
+            # Extract order data
             order_id = order_data['order_id']
             amount = order_data['value']
             
@@ -38,16 +37,13 @@ class PaymentApplicationService:
             # Publish payment result
             if success:
                 self.event_bus.publish('payment.processed', payment_event.to_dict())
-                self.metrics.increment_counter('payments_total', {'status': 'success'})
-                print(f"Payment Service: Payment successful for order {order_id} (${amount})")
+                self.metrics.increment_payments('success')
             else:
                 self.event_bus.publish('payment.failed', payment_event.to_dict())
-                self.metrics.increment_counter('payments_total', {'status': 'failed'})
-                print(f"Payment Service: Payment failed for order {order_id} (${amount})")
+                self.metrics.increment_payments('failed')
             
             # Record processing time
-            self.metrics.record_histogram('payment_processing_time', processing_time)
+            self.metrics.record_payment_processing_time(processing_time)
             
         except Exception as e:
-            print(f"Payment Service: Error processing payment: {e}")
-            self.metrics.increment_counter('payments_total', {'status': 'error'})
+            self.metrics.increment_payments('error')

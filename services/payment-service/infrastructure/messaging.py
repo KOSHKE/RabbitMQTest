@@ -57,26 +57,15 @@ class RabbitMQEventBus(EventBus):
         )
         await exchange.publish(message, routing_key=routing_key)
         
-    async def subscribe(self, queue_name: str, callback: Callable):
+    async def subscribe(self, queue_name: str, callback: Callable[[dict], None]):
         """Subscribe to queue messages"""
         queue = await self.channel.get_queue(queue_name)
         
         async def message_handler(message: aio_pika.IncomingMessage):
             async with message.process():
-                # Convert to sync callback format for compatibility
-                class MockMethod:
-                    def __init__(self, delivery_tag):
-                        self.delivery_tag = delivery_tag
-                        
-                class MockChannel:
-                    def basic_ack(self, delivery_tag):
-                        pass  # Auto-ack handled by aio-pika
-                
-                mock_ch = MockChannel()
-                mock_method = MockMethod(message.delivery_tag)
-                mock_properties = None
-                
-                callback(mock_ch, mock_method, mock_properties, message.body)
+                # Parse JSON and call callback with clean data
+                data = json.loads(message.body.decode())
+                callback(data)
         
         await queue.consume(message_handler)
         

@@ -28,9 +28,7 @@ class PaymentService:
     async def run(self):
         """Start the payment service"""
         print("Starting Payment Service...")
-        
         await self.setup()
-        
         print("Payment Service started on port 8002")
         
         # Start payment processing
@@ -43,7 +41,6 @@ class PaymentService:
             while True:
                 await asyncio.sleep(1)
         except KeyboardInterrupt:
-            print("Payment Service: Shutting down...")
             await self.cleanup()
     
     async def cleanup(self):

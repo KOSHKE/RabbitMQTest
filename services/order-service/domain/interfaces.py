@@ -24,29 +24,44 @@ class MetricsCollector(ABC):
     """Domain interface for metrics collection"""
     
     @abstractmethod
-    def increment_counter(self, name: str, labels: dict = None) -> None:
-        """Increment counter metric"""
+    def increment_orders(self, status: str) -> None:
+        """Increment orders counter"""
         pass
     
     @abstractmethod
-    def record_histogram(self, name: str, value: float) -> None:
-        """Record histogram value"""
+    def record_order_value(self, value: float) -> None:
+        """Record order value"""
+        pass
+    
+    @abstractmethod
+    def increment_active_orders(self) -> None:
+        """Increment active orders gauge"""
+        pass
+    
+    @abstractmethod
+    def decrement_active_orders(self) -> None:
+        """Decrement active orders gauge"""
         pass
 
 class OrderRepository(ABC):
     """Domain interface for order persistence"""
     
     @abstractmethod
-    def save(self, order: Order) -> None:
+    async def save(self, order: Order) -> None:
         """Save order"""
         pass
     
     @abstractmethod
-    def find_by_id(self, order_id: str) -> Optional[Order]:
+    async def find_by_id(self, order_id: str) -> Optional[Order]:
         """Find order by ID"""
         pass
     
     @abstractmethod
-    def find_all(self) -> list[Order]:
+    async def find_all(self) -> list[Order]:
         """Find all orders"""
+        pass
+    
+    @abstractmethod
+    async def find_by_customer_id(self, customer_id: str) -> list[Order]:
+        """Find orders by customer ID"""
         pass

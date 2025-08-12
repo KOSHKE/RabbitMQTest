@@ -14,7 +14,7 @@ class OrderApplicationService:
         self.min_order_value = float(os.getenv('MIN_ORDER_VALUE', '10.0'))
         self.max_order_value = float(os.getenv('MAX_ORDER_VALUE', '500.0'))
         
-    def place_order(self):
+    async def place_order(self):
         # Create domain object
         customer_id = f"CUST-{random.randint(1, 1000)}"
         order_value = round(random.uniform(self.min_order_value, self.max_order_value), 2)
@@ -28,7 +28,7 @@ class OrderApplicationService:
         )
         
         # Save order to repository
-        self.order_repository.save(order)
+        await self.order_repository.save(order)
         
         # Publish domain event
         self.event_bus.publish('order.placed', event.to_dict())
@@ -37,5 +37,3 @@ class OrderApplicationService:
         self.metrics.increment_orders('placed')
         self.metrics.record_order_value(order.value.amount)
         self.metrics.increment_active_orders()
-        
-        print(f"Order placed: {order.id} (${order.value.amount})")
